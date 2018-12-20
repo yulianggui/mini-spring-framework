@@ -1,0 +1,117 @@
+穷举法：把生活所见所闻全部归纳到我们所学的知识体系中来，加以思考总结变成自己的东西。（举例子）
+类比法：用自己熟悉的方法（利用自己已有的知识体系），去对比学习新的知识。
+
+
+学习最好的方法：就是重复
+
+第一节：
+1、spring源码下载，安装。在idea打开
+
+第二节：
+1、源码分析前篇
+有，代理模式
+责任链
+
+2、学源码，去看去想
+产生问题：
+   IOC、AOP、DI、BeanFactory等这样的一些概念多少
+   已经有了了解，这些spring是如何实现的？
+
+   如果是自己来做，该出于什么意思？
+   IOC：容器，缓存bean的地方，Map容器实现
+   DI：getter、setter、constructor（反射、invoker）
+       依赖注入
+   AOP：为了增强原始Bean的功能（代理技术）
+
+3、没有Spring将如何
+	1、懒惰性，没必要重复早轮子
+	2、没有spring
+	   a:很多设计模式需要自己去整合。
+	   b:所有的封装、继承、多态、增强、依赖
+	     模块管理等等都有自己制定的统一规则
+	   c:所有的创建对象、配置依赖关系、资源的重复利用、
+	     扩展性的手动操作
+   
+4、spring 启动
+   寻找资源、加载、注册
+
+
+第三节
+1、spring中BeanFactory的基本工作流程
+   定位、加载、注册
+     所有的类都要变成 BeanDefintiton:装饰器模式
+          提供AOP增强
+   
+   --- 留下问题，BeanDefinition产生的原因
+   定位完成后，解析成为BeanDefinition
+   
+   Context是入口
+   定位  定位资源。定位的类，用Reader结尾的
+   加载  加载定义的类成为，BeanDefinition保存类信息，包括OOP关系
+   注册  Factory、Context
+      注册就是把用户定义的Bean放到IOC容器中（Map）
+
+2、启动Spring容器的方式
+ClassPathXmlApplicationContext  通过main方法启动
+DispatchServlet
+FileSystem
+Plugin
+Lisenter
+
+3、refresh()方法的作用，在创建IOC前，如果已经有容器存在，
+则需要把已有的容器销毁和关闭，以保证在refresh之后使用的是
+新建立起来的IOC容器
+
+
+第三次课
+ 注册和DI注入流程（getBean）
+
+
+第四次课
+  IOC容器深入剖析
+  getBean在使用的时候，再注入
+  在哪里会自动调用getBean的
+  BeanFactory
+    -- FACTORY_BEAN_PREFIX="&";
+
+  --循环依赖解决
+    org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveValueIfNecessary
+    https://blog.csdn.net/m0_37343985/article/details/82822990
+
+
+
+velocity？？？
+
+SpringMVC中
+   1、DispatchService 实现了ApplicationContextAware接口
+   （首先他也是一个Service）
+
+   2、实现了ApplicationContextAware接，实例化之后，
+   调用init方法，然后调用onRefresh()方法，调用initStrategies
+   重点就在这里了，初始haul九大组件
+   
+   3、doService--》doDispatch-->getHandler
+   -->getHandlerAdapter(根据方法的参数。进行动态参数匹配)
+
+   4、HanlerAdapater
+     --> handler,拿到ModelAndView
+     --> applyDafaultViewName
+
+   5、ViewResolve
+      --> 
+       proccessDispatchResult --> resolveViewName
+    6、HttpResponse
+      --> write()
+
+SpringMVC源码
+    /**
+     * 这里，为什么不用Map，而是List？？？
+     *   1、ZGHandlerMapping里边封装了url
+     *   2、springMVC中，
+     *    同时url支持正则
+         因此SpringMVC中其实是一个正则
+     */
+    private Map<String, ZGHandlerMapping> handlerMappingMap = new HashMap<>();
+可以到网上看看HandlerMapping的由来
+
+
