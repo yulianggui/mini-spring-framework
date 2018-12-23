@@ -16,6 +16,7 @@ public class ZGBeanPostProcessor {
      * @return
      */
     public Object postProcessBeforeInitialization(Object bean, String beanName){
+        System.out.println("ZGBeanPostProcessor.postProcessBeforeInitialization ...");
         return bean;
     }
 
@@ -26,6 +27,7 @@ public class ZGBeanPostProcessor {
      * @return
      */
     public Object postProcessAfterInitialization(Object bean, String beanName){
+        System.out.println("ZGBeanPostProcessor.postProcessAfterInitialization ...");
         return bean;
     }
 

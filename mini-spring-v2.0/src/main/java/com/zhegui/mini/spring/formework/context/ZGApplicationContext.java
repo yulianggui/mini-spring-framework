@@ -4,6 +4,7 @@ import com.zhegui.mini.spring.demo.controller.UserController;
 import com.zhegui.mini.spring.formework.annotation.ZGAutowired;
 import com.zhegui.mini.spring.formework.annotation.ZGController;
 import com.zhegui.mini.spring.formework.annotation.ZGService;
+import com.zhegui.mini.spring.formework.aop.ZGAopConfig;
 import com.zhegui.mini.spring.formework.beans.BeanDefinition;
 import com.zhegui.mini.spring.formework.beans.BeanWrapper;
 import com.zhegui.mini.spring.formework.beans.ZGBeanPostProcessor;
@@ -11,9 +12,13 @@ import com.zhegui.mini.spring.formework.context.support.BeanDefinitionReader;
 import com.zhegui.mini.spring.formework.core.BeanFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * create by zhegui on 2018/12/16
@@ -22,16 +27,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 容器 上下文信息
  */
-public class ZGApplicationContext implements BeanFactory{
+public class ZGApplicationContext extends ZGDefaultListableBeanFactory implements BeanFactory{
 
     private String[] configLocations;
 
     private BeanDefinitionReader beanDefinitionReader;
-
-    /**
-     * 用来保存配置信息
-     */
-    private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
 
     /**
      * 用来保证注册式单例的容器
@@ -88,7 +88,9 @@ public class ZGApplicationContext implements BeanFactory{
              */
             if(!beanDefinitionEntry.getValue().isLazyInit()){
                 //将beanName都包装起来
-                getBean(beanName);
+                Object object = getBean(beanName);
+                //拿到的是代理对象
+                System.out.println(object.getClass());
             }
         }
 
@@ -203,7 +205,12 @@ public class ZGApplicationContext implements BeanFactory{
             }
             //在 wrapper初始化之前通知
             beanPostProcessor.postProcessBeforeInitialization(instance, beanName);
+
+
             BeanWrapper beanWrapper = new BeanWrapper(instance);
+            //将代理对象的信息保存
+            ZGAopConfig aopConfig = createBeanAopConfig(beanDefinition);
+            beanWrapper.setAopConfig(aopConfig);
             //把通知事件添加进去
             beanWrapper.setPostProcessor(beanPostProcessor);
             this.beanWrapperMap.put(beanName, beanWrapper);
@@ -230,6 +237,44 @@ public class ZGApplicationContext implements BeanFactory{
     }
 
     /**
+     * 扫描该bean是否需要进行增强，如果需要增强，则将增强的信息标注到 ZGAopConfig
+     * @param beanDefinition
+     * @return
+     */
+    private ZGAopConfig createBeanAopConfig(BeanDefinition beanDefinition) throws Exception{
+        ZGAopConfig aopConfig = new ZGAopConfig();
+        Properties properties = this.beanDefinitionReader.getContextConfigProperties();
+        String pointCut = properties.getProperty("pointCut");
+        String[] before = properties.getProperty("aspectBefore").split("\\s");
+        String[] after = properties.getProperty("aspectAfter").split("\\s");
+
+        String beanClassName = beanDefinition.getBeanClassName();
+        Class<?> beanClazz = Class.forName(beanClassName);
+
+        //简单处理获得，代理对象的类对象
+        Class<?> aspectClazz = Class.forName(before[0]);
+
+        Pattern pattern = Pattern.compile(pointCut);
+
+        //遍历这些方法，看是否需要增强
+        for (Method method : beanClazz.getMethods()){
+
+            //method.toString()
+            //public java.lang.String com.zhegui.mini.spring.....StringImpl.add(java.lang.String...)
+            Matcher matcher = pattern.matcher(method.toString());
+            if(matcher.matches()){
+                Method[] points = new Method[]{aspectClazz.getMethod(before[1]),
+                                                aspectClazz.getMethod(after[1])};
+                Object aspect = aspectClazz.newInstance();
+
+                //将需要增强的方法添加到aopConfig配置中
+                aopConfig.put(method, aspect, points);
+            }
+        }
+        return aopConfig;
+    }
+
+    /**
      * 创建Bean实例,默认为创建单例
      * @return
      */
@@ -249,5 +294,17 @@ public class ZGApplicationContext implements BeanFactory{
         }
 
         return instance;
+    }
+
+    public String[] getBeanDefinitionNames(){
+        return this.beanDefinitionMap.keySet().toArray(new String[this.beanDefinitionMap.size()]);
+    }
+
+    public int getBeanDefinitionConut(){
+        return this.beanDefinitionMap.size();
+    }
+
+    public Properties getConfig(){
+        return this.beanDefinitionReader.getContextConfigProperties();
     }
 }

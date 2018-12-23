@@ -115,3 +115,24 @@ SpringMVC源码
 可以到网上看看HandlerMapping的由来
 
 
+
+在SpringMVC   HandlerMapping的处理时
+要遍历所有的BeanDefinitionNames，对那些添加了Controller的注解的类
+进行Method---》url的映射，但是通过getBean， 我们拿到的是
+代理过后的Bean，此时那些Controller注解已经不存在与代理对象中
+
+在SpringMVC层，并没有直接获得BeanWrapper
+只能通过getBean拿到被代理过后的Bean
+
+在Spring中，有这么一个类 AOPProxyUtils，用来解决这个问题
+   --JDK动态代理， 代理对象中，有个h属性，这个h属性就是原始的对象
+    这个h属性 java.lang.reflect.Proxy 中的h（InvocationHandler）
+
+
+待加入功能：利用AOP思想，自己去实现一个TransactionManager
+  需要补充：把Method的异常拿到，把Method的方法拿到
+            把Method的参数拿到
+
+
+
+

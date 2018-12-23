@@ -1,5 +1,7 @@
 package com.zhegui.mini.spring.formework.beans;
 
+import com.zhegui.mini.spring.formework.aop.ZGAopConfig;
+import com.zhegui.mini.spring.formework.aop.ZGAopProxy;
 import com.zhegui.mini.spring.formework.core.FactoryBean;
 
 /**
@@ -7,6 +9,7 @@ import com.zhegui.mini.spring.formework.core.FactoryBean;
  */
 public class BeanWrapper extends FactoryBean{
 
+    private ZGAopProxy aopProxy = new ZGAopProxy();
 
     /**
      * 用作事件响应
@@ -24,7 +27,8 @@ public class BeanWrapper extends FactoryBean{
     private Object originalInstance;
 
     public BeanWrapper(Object object){
-        this.wrapperInstance = object;
+        //通过aopProxy产生一个代理对象
+        this.wrapperInstance = aopProxy.getProxy(object);
         this.originalInstance = object;
     }
 
@@ -52,5 +56,10 @@ public class BeanWrapper extends FactoryBean{
 
     public void setPostProcessor(ZGBeanPostProcessor postProcessor) {
         this.postProcessor = postProcessor;
+    }
+
+    //将aopConfig往下传
+    public void setAopConfig(ZGAopConfig aopConfig){
+        this.aopProxy.setConfig(aopConfig);
     }
 }

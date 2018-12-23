@@ -4,10 +4,12 @@
 	<classpath>
 		<dir name="E:/gplearn/03/mini-spring-v2.0/target/mini-spring-v2.0/WEB-INF/classes">
 			<include name="application.properties"/>
+			<include name="layouts/first.html"/>
 			<include name="webdefault.xml"/>
 		</dir>
 		<dir name="E:/gplearn/03/mini-spring-v2.0/target/mini-spring-v2.0/WEB-INF/classes">
 			<include name="application.properties"/>
+			<include name="layouts/first.html"/>
 			<include name="webdefault.xml"/>
 		</dir>
 		<dir name="E:/gplearn/03/mini-spring-v2.0/src/main/resources">
